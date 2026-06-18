@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSCOIN - Shorts Video Rewards Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass-premium {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+        }
+        /* Shorts Video Container Styling */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 177.77%; /* 16:9 Aspect Ratio for Shorts */
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #000;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-white font-sans antialiased">
+
+    <div id="auth-screen" class="flex flex-col items-center justify-center min-h-screen px-4">
+        <div class="bg-gray-900 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-800">
+            <h1 class="text-4xl font-black text-center text-yellow-400 mb-2 tracking-wider">VSCOIN</h1>
+            <p class="text-gray-400 text-center mb-6 text-xs uppercase tracking-widest">Watch & Share YouTube Shorts</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="name@domain.com" class="w-full p-3.5 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3.5 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 transition text-sm">
+                </div>
+                <button onclick="handleAuth('login')" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-950 font-bold p-3.5 rounded-xl transition shadow-lg shadow-yellow-500/20 text-sm uppercase tracking-wider">Secure Login</button>
+                <button onclick="handleAuth('signup')" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold p-3.5 rounded-xl transition text-xs">Create User Account</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="user-app" class="hidden min-h-screen pb-24">
+        <header class="bg-gray-950 p-4 border-b border-gray-800 flex justify-between items-center sticky top-0 z-50max-w-md mx-auto">
+            <span class="text-2xl font-black text-yellow-400">VSCOIN</span>
+            <div class="bg-gray-900 px-4 py-2 rounded-full flex items-center gap-2 border border-yellow-500/20">
+                <i class="fa-solid fa-indian-rupee-sign text-yellow-400"></i>
+                <span id="global-balance" class="font-bold text-yellow-400">0.00</span>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-6">
+            
+            <section id="screen-feed" class="user-screen space-y-4">
+                <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 flex justify-between text-xs text-gray-400">
+                    <span>Watched Count: <strong id="watch-count" class="text-yellow-400">0</strong> / 10,000</span>
+                    <span>Reward: ₹30 Rupees</span>
+                </div>
+
+                <div id="video-feed-container" class="space-y-6">
+                    </div>
+            </section>
+
+            <section id="screen-upload" class="user-screen hidden space-y-4">
+                <h2 class="text-2xl font-bold text-yellow-400">Upload YouTube Short</h2>
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Video Title</label>
+                        <input type="text" id="upload-title" placeholder="Cool tech short..." class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-yellow-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">YouTube Video Link / URL</label>
+                        <input type="text" id="upload-url" placeholder="https://youtube.com/shorts/..." class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-yellow-400">
+                    </div>
+                    <button onclick="submitUserVideo()" class="w-full bg-yellow-500 text-gray-950 font-bold p-3 rounded-xl text-sm hover:bg-yellow-600 transition">Publish & Earn (₹40 per 1k views)</button>
+                </div>
+
+                <h3 class="font-bold text-sm text-gray-400 mt-4 uppercase">My Shared Videos</h3>
+                <div id="user-my-videos" class="space-y-2"></div>
+            </section>
+
+            <section id="screen-wallet" class="user-screen hidden space-y-6">
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-xl font-bold text-yellow-400"><i class="fa-solid fa-bank mr-2"></i>Bank Settlement Accounts</h2>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Account Holder Name</label>
+                        <input type="text" id="bank-holder" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none" placeholder="Official Name">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Bank Name & Branch</label>
+                        <input type="text" id="bank-name" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none" placeholder="e.g. State Bank of India">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Account Number</label>
+                        <input type="text" id="bank-acc" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none" placeholder="Bank Account Number">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">IFSC Code</label>
+                        <input type="text" id="bank-ifsc" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none uppercase" placeholder="e.g. SBIN0001234">
+                    </div>
+                    <button onclick="saveBankDetails()" class="w-full bg-gray-800 border border-gray-700 text-white font-bold p-3 rounded-xl text-sm hover:bg-gray-700 transition">Save Bank Profile</button>
+                </div>
+
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex justify-between items-center bg-gray-950 p-4 rounded-xl border border-gray-800">
+                        <span class="text-sm text-gray-400">Available Cash Balance:</span>
+                        <span id="wallet-balance-display" class="font-black text-xl text-emerald-400">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 px-1">
+                        <span>Followers Counter: <strong id="user-followers" class="text-blue-400">0</strong></span>
+                        <span>Limit: ₹500 - ₹5000</span>
+                    </div>
+                    <button onclick="requestBankWithdrawal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3.5 rounded-xl text-sm transition tracking-wider">
+                        Request IMPS/NEFT Cashout
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-6 py-3 flex justify-between items-center z-50 max-w-md mx-auto">
+            <button onclick="switchUserScreen('feed')" class="flex flex-col items-center gap-1 text-yellow-400 nav-btn" id="nav-feed">
+                <i class="fa-solid fa-play text-lg"></i><span class="text-[10px]">Shorts</span>
+            </button>
+            <button onclick="switchUserScreen('upload')" class="flex flex-col items-center gap-1 text-gray-500 nav-btn" id="nav-upload">
+                <i class="fa-solid fa-cloud-arrow-up text-lg"></i><span class="text-[10px]">Upload</span>
+            </button>
+            <button onclick="switchUserScreen('wallet')" class="flex flex-col items-center gap-1 text-gray-500 nav-btn" id="nav-wallet">
+                <i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px]">Wallet</span>
+            </button>
+            <button onclick="handleLogout()" class="flex flex-col items-center gap-1 text-red-500">
+                <i class="fa-solid fa-power-off text-lg"></i><span class="text-[10px]">Exit</span>
+            </button>
+        </nav>
+    </div>
+
+
+    <div id="admin-app" class="hidden p-6 max-w-5xl mx-auto space-y-8">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+            <h2 class="text-3xl font-black text-red-500 tracking-wide"><i class="fa-solid fa-shield-halved mr-2"></i>VSCOIN Control Room</h2>
+            <button onclick="handleLogout()" class="bg-gray-800 hover:bg-gray-700 px-5 py-2 rounded-xl text-sm font-bold transition">Admin Logout</button>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4">
+            <h3 class="text-xl font-bold text-blue-400"><i class="fa-solid fa-users-gear mr-2"></i>Manage Users (Earning & Followers)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs">
+                            <th class="p-3">User Email</th>
+                            <th class="p-3">Followers</th>
+                            <th class="p-3">Current Balance</th>
+                            <th class="p-3">Actions Control</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-list" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4">
+            <h3 class="text-xl font-bold text-orange-400"><i class="fa-solid fa-video-slash mr-2"></i>Video Terminal Control (Edit/Delete/Reports)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs">
+                            <th class="p-3">Title</th>
+                            <th class="p-3">Uploader Email</th>
+                            <th class="p-3">Views Count</th>
+                            <th class="p-3">Report Counter</th>
+                            <th class="p-3">Action Gate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-videos-list" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800">
+            <h3 class="text-xl font-bold text-emerald-400 mb-4"><i class="fa-solid fa-money-check-dollar mr-2"></i>Pending Cash Settlements</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs">
+                            <th class="p-3">Uploader Email</th>
+                            <th class="p-3">Holder / Bank Name</th>
+                            <th class="p-3">Account / IFSC</th>
+                            <th class="p-3">Amount (INR)</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payout-table-body" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVHBNMZAffSaX9JeAexBGV60zUlGyeb54",
+            authDomain: "vscoin-ba376.firebaseapp.com",
+            databaseURL: "https://vscoin-ba376-default-rtdb.firebaseio.com",
+            projectId: "vscoin-ba376",
+            storageBucket: "vscoin-ba376.firebasestorage.app",
+            messagingSenderId: "677452214041",
+            appId: "1:677452214041:web:4a777624133a99f5285f88"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = "grtts24@gmail.com";
+        let currentUser = null, userData = {};
+
+        // অথেন্টিকেশন ট্র্যাকিং ফিল্টার
+        window.handleAuth = async (type) => {
+            const email = document.getElementById('auth-email').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert("Fields cannot be empty.");
+            
+            try {
+                if(type === 'signup') {
+                    if(email === ADMIN_EMAIL) return alert("Cannot register directly as admin.");
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "users", res.user.uid), {
+                        email: email, balance: 0.00, watchedCount: 0, followers: 0,
+                        bankHolder: "", bankName: "", bankAccount: "", bankIfsc: ""
+                    });
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) { alert("Error: " + err.message); }
+        };
+
+        window.handleLogout = () => signOut(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('user-app').classList.add('hidden');
+            document.getElementById('admin-app').classList.add('hidden');
+
+            if (user) {
+                currentUser = user;
+                if(user.email.toLowerCase() === ADMIN_EMAIL) {
+                    document.getElementById('admin-app').classList.remove('hidden');
+                    loadAdminDashboard();
+                } else {
+                    document.getElementById('user-app').classList.remove('hidden');
+                    await fetchUserData();
+                    loadShortsFeed();
+                    loadUserUploadedVideos();
+                }
+            } else {
+                currentUser = null;
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        });
+
+        // ==================== 👤 কাস্টমার কোর ফিচারস ====================
+        async function fetchUserData() {
+            const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+            if(userDoc.exists()) {
+                userData = userDoc.data();
+                document.getElementById('global-balance').innerText = userData.balance.toFixed(2);
+                document.getElementById('wallet-balance-display').innerText = "₹ " + userData.balance.toFixed(2);
+                document.getElementById('watch-count').innerText = userData.watchedCount || 0;
+                document.getElementById('user-followers').innerText = userData.followers || 0;
+                document.getElementById('bank-holder').value = userData.bankHolder || "";
+                document.getElementById('bank-name').value = userData.bankName || "";
+                document.getElementById('bank-acc').value = userData.bankAccount || "";
+                document.getElementById('bank-ifsc').value = userData.bankIfsc || "";
+            }
+        }
+
+        window.switchUserScreen = (screenId) => {
+            document.querySelectorAll('.user-screen').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-yellow-400', 'text-gray-500'));
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+            document.getElementById(`nav-${screenId}`).classList.replace('text-gray-500', 'text-yellow-400');
+        };
+
+        // YouTube Shorts লিঙ্ক থেকে Embed ID বের করার হেল্পার ফাংশন
+        function extractVideoID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // গ্লোবাল ফিড লোড করা
+        async function loadShortsFeed() {
+            const container = document.getElementById('video-feed-container');
+            container.innerHTML = "";
+            const snap = await getDocs(collection(db, "videos"));
+            
+            if(snap.empty) {
+                container.innerHTML = `<p class="text-center text-xs text-gray-500 py-6">No shorts available. Upload first!</p>`;
+                return;
+            }
+
+            snap.forEach(docSnap => {
+                const vid = docSnap.data();
+                const embedId = extractVideoID(vid.url);
+                if(!embedId) return;
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-900 p-4 rounded-2xl border border-gray-800 space-y-3";
+                card.innerHTML = `
+                    <h4 class="text-sm font-bold text-gray-200">${vid.title}</h4>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/${embedId}?rel=0" allowfullscreen></iframe>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-1">
+                        <button onclick="triggerWatchBonus('${docSnap.id}', '${vid.uploaderUid}', ${vid.views || 0})" class="bg-yellow-500 text-gray-950 font-bold px-4 py-2 rounded-xl transition hover:bg-yellow-600"><i class="fa-solid fa-eye mr-1"></i> I Finished Watching</button>
+                        <button onclick="reportVideo('${docSnap.id}')" class="text-red-400 hover:text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Report Video</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ভিউ কমপ্লিট বোনাস ক্যালকুলেশন
+        window.triggerWatchBonus = async (vidId, uploaderUid, currentViews) => {
+            const userRef = doc(db, "users", currentUser.uid);
+            let nextWatchCount = (userData.watchedCount || 0) + 1;
+            let balancePayoutBonus = 0;
+
+            if(nextWatchCount >= 10000) {
+                balancePayoutBonus = 30.00; // ১০,০০০ ভিউ কমপ্লিট হলে ₹৩০ বোনাস
+                nextWatchCount = 0; 
+                alert("Success: You hit 10k video watches! ₹30 added to wallet.");
+            } else {
+                alert("Watch count recorded locally!");
+            }
+
+            await updateDoc(userRef, {
+                watchedCount: nextWatchCount,
+                balance: userData.balance + balancePayoutBonus
+            });
+
+            // আপলোডারের জন্য ১ ভিউ যোগ করা এবং ১,০০০ ভিউ হলে ₹৪০ প্রোভাইড করা
+            const nextVidViews = currentViews + 1;
+            await updateDoc(doc(db, "videos", vidId), { views: nextVidViews });
+
+            if(nextVidViews % 1000 === 0) {
+                const uploaderRef = doc(db, "users", uploaderUid);
+                const uploaderSnap = await getDoc(uploaderRef);
+                if(uploaderSnap.exists()) {
+                    const currentUpBal = uploaderSnap.data().balance || 0;
+                    await updateDoc(uploaderRef, { balance: currentUpBal + 40.00 }); // প্রতি ১,০০০ ভিউতে ₹৪০
+                }
+            }
+            fetchUserData();
+            loadShortsFeed();
+        };
+
+        // রিপোর্টিং সিস্টেম
+        window.reportVideo = async (vidId) => {
+            const vidRef = doc(db, "videos", vidId);
+            const snap = await getDoc(vidRef);
+            if(snap.exists()) {
+                const currentReports = snap.data().reports || 0;
+                await updateDoc(vidRef, { reports: currentReports + 1 });
+                alert("Video reported successfully. Admin team will review this shortly.");
+            }
+        };
+
+        // কাস্টমার শর্টস লিঙ্ক সাবমিট করা
+        window.submitUserVideo = async () => {
+            const title = document.getElementById('upload-title').value.trim();
+            const url = document.getElementById('upload-url').value.trim();
+            if(!title || !url) return alert("Fill in link parameters.");
+
+            const embedCheck = extractVideoID(url);
+            if(!embedCheck) return alert("Invalid entry! Input a proper YouTube Short Link.");
+
+            await setDoc(doc(collection(db, "videos")), {
+                title: title, url: url, uploaderUid: currentUser.uid,
+                uploaderEmail: currentUser.email, views: 0, reports: 0
+            });
+
+            alert("Short video linked and published successfully!");
+            document.getElementById('upload-title').value = "";
+            document.getElementById('upload-url').value = "";
+            loadShortsFeed();
+            loadUserUploadedVideos();
+        };
+
+        async function loadUserUploadedVideos() {
+            const div = document.getElementById('user-my-videos');
+            div.innerHTML = "";
+            const snap = await getDocs(collection(db, "videos"));
+            snap.forEach(d => {
+                const data = d.data();
+                if(data.uploaderUid === currentUser.uid) {
+                    const box = document.createElement('div');
+                    box.className = "bg-gray-900 p-3 rounded-xl border border-gray-800 flex justify-between text-xs";
+                    box.innerHTML = `<span>${data.title}</span><span class="text-yellow-500 font-bold">${data.views} Views</span>`;
+                    div.appendChild(box);
+                }
+            });
+        }
+
+        window.saveBankDetails = async () => {
+            const holder = document.getElementById('bank-holder').value.trim();
+            const name = document.getElementById('bank-name').value.trim();
+            const acc = document.getElementById('bank-acc').value.trim();
+            const ifsc = document.getElementById('bank-ifsc').value.trim().toUpperCase();
+            if(!holder || !acc) return alert("Fill banking profile components.");
+
+            await updateDoc(doc(db, "users", currentUser.uid), {
+                bankHolder: holder, bankName: name, bankAccount: acc, bankIfsc: ifsc
+            });
+            alert("Bank credentials updated.");
+            fetchUserData();
+        };
+
+        window.requestBankWithdrawal = async () => {
+            // উইথড্রাল রেঞ্জ লিমিট ₹৫০০ থেকে ₹৫,০০০ রুপি
+            if(userData.balance < 500.00 || userData.balance > 5000.00) {
+                return alert("Withdrawal Limit Error: Payout request must be between ₹500 and ₹5,000 Rupees.");
+            }
+            if(!userData.bankAccount) return alert("Map bank profile first.");
+
+            await setDoc(doc(collection(db, "payouts")), {
+                uid: currentUser.uid, email: currentUser.email, holderName: userData.bankHolder,
+                bankName: userData.bankName, accountNumber: userData.bankAccount, ifscCode: userData.bankIfsc,
+                rupeesToPay: userData.balance, date: new Date().toLocaleDateString()
+            });
+
+            await updateDoc(doc(db, "users", currentUser.uid), { balance: 0.00 });
+            alert("Settlement request sent to Admin clearing network!");
+            fetchUserData();
+        };
+
+
+        // ==================== 👑 সুপার অ্যাডমিন প্যানেল মডিউলস ====================
+        async function loadAdminDashboard() {
+            loadAdminUsers();
+            loadAdminVideos();
+            loadAdminPayouts();
+        }
+
+        // অ্যাডমিন ইউজার লিস্ট (ফলোয়ার এবং আর্নিং কন্ট্রোল)
+        async function loadAdminUsers() {
+            const tbody = document.getElementById('admin-users-list');
+            tbody.innerHTML = "";
+            const snap = await getDocs(collection(db, "users"));
+            snap.forEach(docSnap => {
+                const usr = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800";
+                tr.innerHTML = `
+                    <td class="p-3">${usr.email}</td>
+                    <td class="p-3 font-bold text-blue-400">${usr.followers || 0}</td>
+                    <td class="p-3 font-bold text-emerald-400">₹ ${usr.balance.toFixed(2)}</td>
+                    <td class="p-3 flex gap-2">
+                        <button onclick="editUserMetrics('${docSnap.id}', ${usr.balance}, ${usr.followers || 0})" class="bg-gray-800 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-gray-700">Modify Data</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.editUserMetrics = async (uid, currentBal, currentFollowers) => {
+            const nextBal = prompt("Enter New Balance Wallet Amount (INR):", currentBal);
+            const nextFollowers = prompt("Enter New Followers Count:", currentFollowers);
+            if(nextBal === null || nextFollowers === null) return;
+
+            await updateDoc(doc(db, "users", uid), {
+                balance: parseFloat(nextBal),
+                followers: parseInt(nextFollowers)
+            });
+            alert("User parameters altered successfully.");
+            loadAdminUsers();
+        };
+
+        // অ্যাডমিন ভিডিও কন্ট্রোল (ডিলিট এবং এডিট রিপোর্টস)
+        async function loadAdminVideos() {
+            const tbody = document.getElementById('admin-videos-list');
+            tbody.innerHTML = "";
+            const snap = await getDocs(collection(db, "videos"));
+            snap.forEach(docSnap => {
+                const vid = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold">${vid.title}</td>
+                    <td class="p-3 text-xs text-gray-400">${vid.uploaderEmail}</td>
+                    <td class="p-3 text-yellow-500 font-bold">${vid.views || 0}</td>
+                    <td class="p-3 text-red-400 font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i> ${vid.reports || 0}</td>
+                    <td class="p-3 flex gap-2">
+                        <button onclick="editVideoTitle('${docSnap.id}', '${vid.title}')" class="bg-blue-600 px-3 py-1 rounded text-xs font-bold">Edit</button>
+                        <button onclick="deleteVideoGate('${docSnap.id}')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.editVideoTitle = async (id, oldTitle) => {
+            const nextTitle = prompt("Update Short Video Title:", oldTitle);
+            if(!nextTitle) return;
+            await updateDoc(doc(db, "videos", id), { title: nextTitle });
+            loadAdminVideos();
+        };
+
+        window.deleteVideoGate = async (id) => {
+            if(confirm("Are you sure you want to delete this short video?")) {
+                await deleteDoc(doc(db, "videos", id));
+                alert("Video vanished from terminal!");
+                loadAdminVideos();
+            }
+        };
+
+        // ব্যাংক পেআউট ক্লিয়ারেন্স
+        async function loadAdminPayouts() {
+            const tbody = document.getElementById('payout-table-body');
+            tbody.innerHTML = "";
+            const snap = await getDocs(collection(db, "payouts"));
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800 bg-gray-900/40";
+                tr.innerHTML = `
+                    <td class="p-3 text-xs">${data.email}</td>
+                    <td class="p-3 font-semibold text-xs">${data.holderName}<br><span class="text-[10px] text-gray-500">${data.bankName}</span></td>
+                    <td class="p-3 font-mono text-xs text-yellow-500">${data.accountNumber}<br><span class="text-[10px] text-gray-400 font-bold uppercase">${data.ifscCode}</span></td>
+                    <td class="p-3 text-emerald-400 font-bold text-xs">₹ ${data.rupeesToPay.toFixed(2)}</td>
+                    <td class="p-3"><button onclick="approvePayout('${docSnap.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-[11px] font-bold transition">Disburse Fund</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.approvePayout = async (id) => {
+            if(confirm("Confirm IMPS settlement? This deletes request entry.")) {
+                await deleteDoc(doc(db, "payouts", id));
+                alert("Cleared successfully.");
+                loadAdminPayouts();
+            }
+        };
+    </script>
+</body>
+</html>
+    async function loadPayoutRequests() {
+            const tbody = document.getElementById('payout-table-body'); tbody.innerHTML = "";
+            const snap = await getDocs(collection(db, "payouts"));
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-900 bg-gray-900/40";
+                tr.innerHTML = `
+                    <td class="p-3 text-xs">${data.email}</td>
+                    <td class="p-3 font-semibold text-xs">${data.holderName}<br><span class="text-[10px] text-gray-500">${data.bankName}</span></td>
+                    <td class="p-3 font-mono text-xs">${data.accountNumber}<br><span class="text-[10px] text-yellow-500 uppercase">${data.ifscCode}</span></td>
+                    <td class="p-3 text-emerald-400 font-bold text-xs">₹ ${data.rupeesToPay}</td>
+                    <td class="p-3"><button onclick="approvePayout('${docSnap.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-[11px] font-bold transition">Clear Request</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.approvePayout = async (id) => {
+            if(confirm("Confirm bank clearing via IMPS/NEFT?")) {
+                await deleteDoc(doc(doc(db, "payouts", id)));
+                alert("Request cleared successfully.");
+                loadPayoutRequests();
+            }
+        };
+    </script>
+</body>
+</html>
