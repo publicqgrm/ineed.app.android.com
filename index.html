@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSCOIN - Video Rewards Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <style>
+        .video-wrapper-shorts {
+            position: relative;
+            padding-bottom: 177.77%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #000;
+        }
+        .video-wrapper-shorts iframe, .video-wrapper-shorts .yt-player-div {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; border: 0;
+        }
+        .video-wrapper-long {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #000;
+        }
+        .video-wrapper-long iframe, .video-wrapper-long .yt-player-div {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; border: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-white font-sans antialiased">
+
+    <div id="auth-screen" class="flex flex-col items-center justify-center min-h-screen px-4">
+        <div class="bg-gray-900 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-800">
+            <h1 class="text-4xl font-black text-center text-yellow-400 mb-2 tracking-wider">VSCOIN</h1>
+            <p class="text-gray-400 text-center mb-6 text-xs uppercase tracking-widest">Watch Videos & Earn</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="name@domain.com" class="w-full p-3.5 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3.5 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 text-sm">
+                </div>
+                <div id="refer-field-box" class="hidden">
+                    <label class="block text-xs text-yellow-400 mb-1">Referral Code (Optional)</label>
+                    <input type="text" id="auth-refer" placeholder="Enter Friend's Refer Code" class="w-full p-3.5 rounded-xl bg-gray-800 border border-yellow-500/30 focus:outline-none focus:border-yellow-400 text-sm uppercase">
+                </div>
+                
+                <button onclick="handleAuth()" id="btn-primary-auth" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-950 font-bold p-3.5 rounded-xl transition shadow-lg text-sm uppercase tracking-wider">Secure Login</button>
+                <button onclick="toggleAuthMode()" id="btn-toggle-auth" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold p-3.5 rounded-xl transition text-xs">Don't have an account? Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-app" class="hidden min-h-screen pb-24">
+        <header class="bg-gray-950 p-4 border-b border-gray-800 flex justify-between items-center sticky top-0 z-50 max-w-md mx-auto">
+            <span class="text-2xl font-black text-yellow-400">VSCOIN</span>
+            <div class="bg-gray-900 px-4 py-2 rounded-full flex items-center gap-2 border border-yellow-500/20">
+                <i class="fa-solid fa-indian-rupee-sign text-yellow-400"></i>
+                <span id="global-balance" class="font-bold text-yellow-400">0.00</span>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-6">
+            <section id="screen-feed" class="user-screen space-y-4">
+                <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 flex justify-between text-xs text-gray-400">
+                    <span>Watched New Videos: <strong id="watch-count" class="text-yellow-400">0</strong></span>
+                    <span>Per Video: <strong class="text-emerald-400">₹0.05</strong></span>
+                </div>
+                <h2 id="feed-category-title" class="text-xl font-bold text-gray-200 px-1 capitalize">Shorts Videos</h2>
+                <div id="video-feed-container" class="space-y-6"></div>
+            </section>
+
+            <section id="screen-upload" class="user-screen hidden space-y-4">
+                <h2 class="text-2xl font-bold text-yellow-400">Upload YouTube Video</h2>
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Select Video Type</label>
+                        <select id="upload-type" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white focus:outline-none">
+                            <option value="shorts">Shorts Video (Vertical 9:16)</option>
+                            <option value="long">Long Video (Home Feed 16:9)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Video Title</label>
+                        <input type="text" id="upload-title" placeholder="Enter video title..." class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">YouTube Video Link / URL</label>
+                        <input type="text" id="upload-url" placeholder="Paste link here..." class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none">
+                    </div>
+                    <button onclick="submitUserVideo()" class="w-full bg-yellow-500 text-gray-950 font-bold p-3 rounded-xl text-sm hover:bg-yellow-600 transition">Publish Video</button>
+                </div>
+                
+                <h3 class="font-bold text-sm text-gray-400 mt-4 uppercase tracking-wider">My Shared Videos (Edit/Delete)</h3>
+                <div id="user-my-videos" class="space-y-3"></div>
+            </section>
+
+            <section id="screen-wallet" class="user-screen hidden space-y-6">
+                <div class="bg-gradient-to-br from-gray-900 to-yellow-950 p-5 rounded-2xl border border-yellow-500/20 space-y-3">
+                    <h3 class="text-base font-bold text-yellow-400"><i class="fa-solid fa-share-nodes mr-2"></i>Invite Friends & Earn ₹7</h3>
+                    <div class="flex gap-2 items-center bg-gray-950 p-3 rounded-xl border border-gray-800">
+                        <span class="text-xs text-gray-500">Your Code:</span>
+                        <span id="my-refer-code" class="font-mono font-black text-yellow-400 tracking-wider uppercase text-sm">LOADING...</span>
+                    </div>
+                </div>
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-xl font-bold text-yellow-400"><i class="fa-solid fa-bank mr-2"></i>Bank Accounts</h2>
+                    <input type="text" id="bank-holder" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm" placeholder="Official Name">
+                    <input type="text" id="bank-name" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm" placeholder="Bank Name">
+                    <input type="text" id="bank-acc" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm" placeholder="Account Number">
+                    <input type="text" id="bank-ifsc" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm uppercase" placeholder="IFSC Code">
+                    <button onclick="saveBankDetails()" class="w-full bg-gray-800 text-white font-bold p-3 rounded-xl text-sm">Save Bank Profile</button>
+                </div>
+                <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex justify-between items-center bg-gray-950 p-4 rounded-xl border border-gray-800">
+                        <span class="text-sm text-gray-400">Available Balance:</span>
+                        <span id="wallet-balance-display" class="font-black text-xl text-emerald-400">₹ 0.00</span>
+                    </div>
+                    <button onclick="requestWithdrawal()" class="w-full bg-emerald-600 text-white font-bold p-3.5 rounded-xl text-sm">Request Cashout</button>
+                </div>
+            </section>
+
+            <section id="screen-admin" class="user-screen hidden space-y-6">
+                <h2 class="text-2xl font-black text-red-500 border-b border-red-900 pb-2"><i class="fa-solid fa-user-shield mr-2"></i>Admin Dashboard</h2>
+                
+                <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3">
+                    <h3 class="text-sm font-bold text-yellow-400 uppercase tracking-wider">Pending Cashouts</h3>
+                    <div id="admin-payouts-list" class="space-y-2 text-xs"></div>
+                </div>
+
+                <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 space-y-3">
+                    <h3 class="text-sm font-bold text-red-400 uppercase tracking-wider">Global Content Control</h3>
+                    <div id="admin-all-videos" class="space-y-2 text-xs"></div>
+                </div>
+            </section>
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-2 py-2.5 flex justify-between items-center max-w-md mx-auto z-50">
+            <button onclick="switchFeedTab('long')" class="flex flex-col items-center gap-1 text-gray-500 nav-btn flex-1" id="nav-home">
+                <i class="fa-solid fa-house text-lg"></i><span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button onclick="switchFeedTab('shorts')" class="flex flex-col items-center gap-1 text-yellow-400 nav-btn flex-1" id="nav-shorts">
+                <i class="fa-solid fa-bolt text-lg"></i><span class="text-[10px] font-medium">Shorts</span>
+            </button>
+            <button onclick="switchUserScreen('upload')" class="flex flex-col items-center gap-1 text-gray-500 nav-btn flex-1" id="nav-upload">
+                <i class="fa-solid fa-circle-plus text-lg"></i><span class="text-[10px] font-medium">Upload</span>
+            </button>
+            <button onclick="switchUserScreen('wallet')" class="flex flex-col items-center gap-1 text-gray-500 nav-btn flex-1" id="nav-wallet">
+                <i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-medium">Wallet</span>
+            </button>
+            <button onclick="switchUserScreen('admin')" class="hidden flex-col items-center gap-1 text-red-500 nav-btn flex-1" id="nav-admin">
+                <i class="fa-solid fa-lock text-lg"></i><span class="text-[10px] font-bold">Admin</span>
+            </button>
+            <button onclick="handleLogout()" class="flex flex-col items-center gap-1 text-gray-500 flex-1">
+                <i class="fa-solid fa-power-off text-lg"></i><span class="text-[10px] font-medium">Exit</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVHBNMZAffSaX9JeAexBGV60zUlGyeb54",
+            authDomain: "vscoin-ba376.firebaseapp.com",
+            databaseURL: "https://vscoin-ba376-default-rtdb.firebaseio.com",
+            projectId: "vscoin-ba376",
+            storageBucket: "vscoin-ba376.firebasestorage.app",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const rtdb = getDatabase(app);
+
+        const ADMIN_EMAIL = "grtts24@gmail.com"; // সুপার অ্যাডমিন ইমেইল অ্যাকাউন্ট
+
+        let currentUser = null, userData = {};
+        let currentFeedTab = 'shorts'; 
+        let activePlayers = {}; 
+        let authMode = 'login';
+        let sortedVideoKeys = [];
+
+        window.toggleAuthMode = () => {
+            if(authMode === 'login') {
+                authMode = 'signup';
+                document.getElementById('refer-field-box').classList.remove('hidden');
+                document.getElementById('btn-primary-auth').innerText = "Register Account";
+                document.getElementById('btn-toggle-auth').innerText = "Already have an account? Login";
+            } else {
+                authMode = 'login';
+                document.getElementById('refer-field-box').classList.add('hidden');
+                document.getElementById('btn-primary-auth').innerText = "Secure Login";
+                document.getElementById('btn-toggle-auth').innerText = "Don't have an account? Sign Up";
+            }
+        };
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('auth-email').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value;
+            const referInput = document.getElementById('auth-refer').value.trim().toUpperCase();
+            
+            if(!email || !password) return alert("Fields cannot be empty.");
+            try {
+                if(authMode === 'signup') {
+                    let referrerUid = null;
+                    if(referInput) {
+                        const usersSnap = await get(ref(rtdb, 'users'));
+                        if(usersSnap.exists()) {
+                            usersSnap.forEach(uSnap => {
+                                if(uSnap.val().myReferCode === referInput) referrerUid = uSnap.key;
+                            });
+                        }
+                        if(!referrerUid) return alert("Invalid Referral Code!");
+                    }
+
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    
+                    await set(ref(rtdb, 'users/' + res.user.uid), {
+                        email: email, balance: 0.00, watchedCount: 0, myReferCode: generatedCode
+                    });
+
+                    if(referrerUid) {
+                        const rSnap = await get(ref(rtdb, 'users/' + referrerUid));
+                        if(rSnap.exists()) {
+                            const curBal = rSnap.val().balance || 0;
+                            await update(ref(rtdb, 'users/' + referrerUid), { balance: curBal + 7.00 });
+                        }
+                    }
+                    alert("Account registered successfully!");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) { alert(err.message); }
+        };
+
+        window.handleLogout = () => signOut(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('user-app').classList.add('hidden');
+            document.getElementById('nav-admin').classList.add('hidden');
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('user-app').classList.remove('hidden');
+                
+                // অ্যাডমিন ইমেইল ভ্যালিডেশন চেক
+                if(currentUser.email === ADMIN_EMAIL) {
+                    document.getElementById('nav-admin').classList.remove('hidden');
+                }
+
+                await fetchUserData();
+                loadVideosFeed();
+                loadUserUploadedVideos();
+                if(currentUser.email === ADMIN_EMAIL) loadAdminDashboard();
+            } else {
+                currentUser = null;
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        });
+
+        async function fetchUserData() {
+            if(!currentUser) return;
+            const snapshot = await get(ref(rtdb, 'users/' + currentUser.uid));
+            if(snapshot.exists()) {
+                userData = snapshot.val();
+                document.getElementById('global-balance').innerText = (userData.balance || 0).toFixed(2);
+                document.getElementById('wallet-balance-display').innerText = "₹ " + (userData.balance || 0).toFixed(2);
+                document.getElementById('watch-count').innerText = userData.watchedCount || 0;
+                document.getElementById('my-refer-code').innerText = userData.myReferCode || "NONE";
+                document.getElementById('bank-holder').value = userData.bankHolder || "";
+                document.getElementById('bank-name').value = userData.bankName || "";
+                document.getElementById('bank-acc').value = userData.bankAccount || "";
+                document.getElementById('bank-ifsc').value = userData.bankIfsc || "";
+            }
+        }
+
+        window.switchUserScreen = (screenId) => {
+            document.querySelectorAll('.user-screen').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-yellow-400', 'text-gray-500'));
+            
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+            document.getElementById(`nav-${screenId}`).classList.replace('text-gray-500', 'text-yellow-400');
+        };
+
+        window.switchFeedTab = (tab) => {
+            currentFeedTab = tab;
+            switchUserScreen('feed');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-yellow-400', 'text-gray-500'));
+            if(tab === 'shorts') {
+                document.getElementById('nav-shorts').classList.replace('text-gray-500', 'text-yellow-400');
+                document.getElementById('feed-category-title').innerText = "Shorts Videos";
+            } else {
+                document.getElementById('nav-home').classList.replace('text-gray-500', 'text-yellow-400');
+                document.getElementById('feed-category-title').innerText = "Home Feed (Long Videos)";
+            }
+            loadVideosFeed();
+        };
+
+        function extractVideoID(url) {
+            url = url.trim();
+            if(url.length === 11) return url;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        async function loadVideosFeed() {
+            const container = document.getElementById('video-feed-container');
+            container.innerHTML = "";
+            activePlayers = {}; sortedVideoKeys = [];
+            
+            const snapshot = await get(ref(rtdb, 'videos'));
+            if(!snapshot.exists()) {
+                container.innerHTML = `<p class="text-center text-xs text-gray-500 py-6">No videos available.</p>`;
+                return;
+            }
+
+            const watchedList = userData.watchedVideos ? Object.keys(userData.watchedVideos) : [];
+            let rawVideos = [];
+            
+            snapshot.forEach(childSnap => {
+                const vid = childSnap.val();
+                if((vid.type || 'shorts') === currentFeedTab && !watchedList.includes(childSnap.key)) {
+                    rawVideos.push({ id: childSnap.key, data: vid });
+                }
+            });
+
+            rawVideos.reverse(); // Newest first
+
+            if(rawVideos.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-yellow-500 py-6 px-4 bg-gray-900 border border-gray-800 rounded-xl">You've watched all available videos!</p>`;
+                return;
+            }
+
+            sortedVideoKeys = rawVideos.map(v => v.id);
+
+            rawVideos.forEach((item, index) => {
+                const vid = item.data;
+                const vidId = item.id;
+                const embedId = extractVideoID(vid.url);
+                if(!embedId) return;
+
+                const wrapperClass = (currentFeedTab === 'shorts') ? 'video-wrapper-shorts' : 'video-wrapper-long';
+                const divId = `player_${vidId}`;
+
+                const card = document.createElement('div');
+                card.className = `bg-gray-900 p-4 rounded-2xl border border-gray-800 space-y-3 ${index > 0 ? 'hidden' : ''}`;
+                card.id = `card_${vidId}`;
+                card.innerHTML = `
+                    <h4 class="text-sm font-bold text-gray-200 truncate px-1">${vid.title}</h4>
+                    <div class="${wrapperClass}"><div id="${divId}"></div></div>
+                    <div class="text-[11px] text-gray-500 flex justify-between px-1">
+                        <span>Views: <strong class="text-yellow-500">${vid.views || 0}</strong></span>
+                        <span class="text-emerald-400 font-semibold">Reward: ₹0.05</span>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                setTimeout(() => {
+                    activePlayers[divId] = new YT.Player(divId, {
+                        height: '100%', width: '100%', videoId: embedId,
+                        playerVars: { 'autoplay': 0, 'rel': 0, 'controls': 1, 'enablejsapi': 1, 'fs': 1 },
+                        events: { 'onStateChange': (event) => onPlayerStateChange(event, vidId, vid.uploaderUid, vid.views || 0) }
+                    });
+                }, 400);
+            });
+        }
+
+        async function onPlayerStateChange(event, vidId, uploaderUid, currentViews) {
+            if (event.data === YT.PlayerState.ENDED) {
+                let currentBalance = userData.balance || 0;
+                await update(ref(rtdb, 'users/' + currentUser.uid), {
+                    watchedCount: (userData.watchedCount || 0) + 1, balance: currentBalance + 0.05
+                });
+                await set(ref(rtdb, `users/${currentUser.uid}/watchedVideos/${vidId}`), true);
+
+                const nextViews = currentViews + 1;
+                await update(ref(rtdb, 'videos/' + vidId), { views: nextViews });
+
+                alert("You earned ₹0.05! Loading next video...");
+                await fetchUserData();
+
+                const currentIndex = sortedVideoKeys.indexOf(vidId);
+                const nextVideoId = sortedVideoKeys[currentIndex + 1];
+
+                if(nextVideoId) {
+                    document.getElementById(`card_${vidId}`).remove();
+                    const nextCard = document.getElementById(`card_${nextVideoId}`);
+                    if(nextCard) {
+                        nextCard.classList.remove('hidden');
+                        if(activePlayers[`player_${nextVideoId}`]) activePlayers[`player_${nextVideoId}`].playVideo();
+                    }
+                } else {
+                    loadVideosFeed();
+                }
+            }
+        }
+
+        // ইউজার কর্তৃক ভিডিও আপলোড সিস্টেম
+        window.submitUserVideo = async () => {
+            const type = document.getElementById('upload-type').value;
+            const title = document.getElementById('upload-title').value.trim();
+            const url = document.getElementById('upload-url').value.trim();
+            
+            if(!title || !url) return alert("All fields are required!");
+            if(!extractVideoID(url)) return alert("Invalid YouTube URL.");
+
+            const newRef = push(ref(rtdb, 'videos'));
+            await set(newRef, {
+                title: title, url: url, type: type, timestamp: Date.now(),
+                uploaderUid: currentUser.uid, uploaderEmail: currentUser.email, views: 0
+            });
+
+            alert("Video published successfully!");
+            document.getElementById('upload-title').value = "";
+            document.getElementById('upload-url').value = "";
+            await fetchUserData();
+            switchFeedTab(type);
+            loadUserUploadedVideos();
+            if(currentUser.email === ADMIN_EMAIL) loadAdminDashboard();
+        };
+
+        // ইউজারের নিজের ভিডিও ইডিট এবং ডিলিট ম্যানেজমেন্ট
+        async function loadUserUploadedVideos() {
+            const div = document.getElementById('user-my-videos');
+            div.innerHTML = "";
+            const snapshot = await get(ref(rtdb, 'videos'));
+            if(snapshot.exists()) {
+                snapshot.forEach(d => {
+                    const data = d.val();
+                    if(data.uploaderUid === currentUser.uid) {
+                        const box = document.createElement('div');
+                        box.className = "bg-gray-900 p-4 rounded-xl border border-gray-800 flex flex-col gap-2 text-xs";
+                        box.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-gray-200 text-sm" id="title_text_${d.key}">${data.title}</p>
+                                    <span class="text-[10px] text-gray-500 uppercase font-semibold">${data.type || 'shorts'} • ${data.views || 0} Views</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 justify-end mt-1">
+                                <button onclick="editVideoTitle('${d.key}')" class="bg-blue-600/30 hover:bg-blue-600 border border-blue-500 text-blue-300 hover:text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                <button onclick="deleteUserVideo('${d.key}')" class="bg-red-600/30 hover:bg-red-600 border border-red-500 text-red-300 hover:text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1"><i class="fa-solid fa-trash"></i> Delete</button>
+                            </div>
+                        `;
+                        div.appendChild(box);
+                    }
+                });
+            }
+        }
+        window.loadUserUploadedVideos = loadUserUploadedVideos;
+
+        // ভিডিও এডিট ফাংশন
+        window.editVideoTitle = async (vidId) => {
+            const newTitle = prompt("Enter your new video title:");
+            if(!newTitle || newTitle.trim() === "") return;
+            await update(ref(rtdb, `videos/${vidId}`), { title: newTitle.trim() });
+            alert("Title updated successfully!");
+            loadUserUploadedVideos();
+            loadVideosFeed();
+            if(currentUser.email === ADMIN_EMAIL) loadAdminDashboard();
+        };
+
+        // ভিডিও ডিলিট ফাংশন
+        window.deleteUserVideo = async (vidId) => {
+            if(confirm("Are you sure you want to delete this video forever?")) {
+                await remove(ref(rtdb, `videos/${vidId}`));
+                alert("Video deleted completely.");
+                loadUserUploadedVideos();
+                loadVideosFeed();
+                if(currentUser.email === ADMIN_EMAIL) loadAdminDashboard();
+            }
+        };
+
+        // ক্যাশআউট উইথড্র রিকোয়েস্ট পাঠাতে
+        window.requestWithdrawal = async () => {
+            const bal = userData.balance || 0;
+            if(bal < 50) return alert("Minimum withdrawal threshold is ₹50.");
+            if(!userData.bankAccount || !userData.bankIfsc) return alert("Please fill up bank profile first.");
+
+            const payoutRef = push(ref(rtdb, 'payouts'));
+            await set(payoutRef, {
+                uid: currentUser.uid, email: currentUser.email, amount: bal,
+                holder: userData.bankHolder, bank: userData.bankName, account: userData.bankAccount, ifsc: userData.bankIfsc
+            });
+
+            await update(ref(rtdb, `users/${currentUser.uid}`), { balance: 0.00 });
+            alert("Cashout request sent to Admin panel successfully!");
+            fetchUserData();
+            if(currentUser.email === ADMIN_EMAIL) loadAdminDashboard();
+        };
+
+        // ব্যাংক ডিটেইলস সেভ করা
+        window.saveBankDetails = async () => {
+            await update(ref(rtdb, 'users/' + currentUser.uid), {
+                bankHolder: document.getElementById('bank-holder').value,
+                bankName: document.getElementById('bank-name').value,
+                bankAccount: document.getElementById('bank-acc').value,
+                bankIfsc: document.getElementById('bank-ifsc').value
+            });
+            alert("Bank credentials updated.");
+            fetchUserData();
+        };
+
+        // ============================================
+        // 🔐 অ্যাডমিন কন্ট্রোল প্যানেল আর্কিটেকচার (SUPER ADMIN)
+        // ============================================
+        async function loadAdminDashboard() {
+            if(currentUser.email !== ADMIN_EMAIL) return;
+
+            // ১. পেন্ডিং ক্যাশআউট রিকোয়েস্ট লোড ও ক্লিয়ারিং কন্ট্রোল
+            const payoutsDiv = document.getElementById('admin-payouts-list');
+            payoutsDiv.innerHTML = "";
+            const paySnap = await get(ref(rtdb, 'payouts'));
+            if(paySnap.exists()) {
+                paySnap.forEach(snap => {
+                    const data = snap.val();
+                    const card = document.createElement('div');
+                    card.className = "bg-gray-950 p-3 rounded-lg border border-gray-800 space-y-2";
+                    card.innerHTML = `
+                        <div class="flex justify-between font-bold text-yellow-400">
+                            <span>User: ${data.email}</span>
+                            <span class="text-emerald-400">₹ ${data.amount.toFixed(2)}</span>
+                        </div>
+                        <p class="text-gray-400 text-[11px]">Bank: ${data.bank} | Acc: ${data.account} | IFSC: ${data.ifsc} (${data.holder})</p>
+                        <button onclick="approvePayout('${snap.key}')" class="w-full bg-emerald-600 text-white font-bold py-1.5 rounded-md mt-1">Approve & Clear Pay</button>
+                    `;
+                    payoutsDiv.appendChild(card);
+                });
+            } else {
+                payoutsDiv.innerHTML = `<p class="text-gray-600 text-xs py-2 text-center">No pending withdrawal requests.</p>`;
+            }
+
+            // ২. গ্লোবাল ভিডিও কন্ট্রোল (যেকোনো ইউজারের ভিডিও ডিলিট করার ক্ষমতা)
+            const globalVideosDiv = document.getElementById('admin-all-videos');
+            globalVideosDiv.innerHTML = "";
+            const vidSnap = await get(ref(rtdb, 'videos'));
+            if(vidSnap.exists()) {
+                vidSnap.forEach(snap => {
+                    const data = snap.val();
+                    const box = document.createElement('div');
+                    box.className = "bg-gray-950 p-3 rounded-lg border border-gray-800 flex justify-between items-center";
+                    box.innerHTML = `
+                        <div>
+                            <p class="font-bold text-gray-300 truncate max-w-[200px]">${data.title}</p>
+                            <span class="text-[10px] text-gray-500">By: ${data.uploaderEmail}</span>
+                        </div>
+                        <button onclick="adminDeleteVideo('${snap.key}')" class="bg-red-600 text-white font-bold px-2.5 py-1.5 rounded-md"><i class="fa-solid fa-trash-can"></i></button>
+                    `;
+                    globalVideosDiv.appendChild(box);
+                });
+            } else {
+                globalVideosDiv.innerHTML = `<p class="text-gray-600 text-xs py-2 text-center">No video contents found.</p>`;
+            }
+        }
+        window.loadAdminDashboard = loadAdminDashboard;
+
+        // অ্যাডমিন কর্তৃক ক্যাশআউট রিকোয়েস্ট ক্লিয়ারেন্স
+        window.approvePayout = async (payId) => {
+            if(confirm("Confirm payout settlement? This will clear the transaction item.")) {
+                await remove(ref(rtdb, `payouts/${payId}`));
+                alert("Payout processed successfully!");
+                loadAdminDashboard();
+            }
+        };
+
+        // অ্যাডমিন কর্তৃক যেকোনো ভিডিও ডিলিট করা
+        window.adminDeleteVideo = async (vidId) => {
+            if(confirm("Admin Action: Do you really want to delete this content globally?")) {
+                await remove(ref(rtdb, `videos/${vidId}`));
+                alert("Content deleted globally by Admin.");
+                loadAdminDashboard();
+                loadVideosFeed();
+            }
+        };
+    </script>
+</body>
+</html>
