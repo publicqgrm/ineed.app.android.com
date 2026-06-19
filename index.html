@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSCOIN PREMIUM - Live Task Matrix (India Mega Edition)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #f8f9fa;
+            color: #202124;
+        }
+        .google-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+        .google-input {
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .google-input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+        }
+        .google-btn-blue {
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 24px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .google-btn-blue:hover {
+            background-color: #1557b0;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            position: relative;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="app-container flex flex-col justify-between min-h-screen">
+        
+        <!-- Auth Screen (Login / Signup) -->
+        <div id="auth-screen" class="flex-1 flex flex-col items-center justify-center px-6 py-12">
+            <div class="w-full space-y-6 text-center">
+                <h1 class="text-4xl font-bold tracking-tight mb-2">
+                    <span class="text-[#4285F4]">V</span><span class="text-[#EA4335]">S</span><span class="text-[#FBBC05]">C</span><span class="text-[#4285F4]">O</span><span class="text-[#34A853]">I</span><span class="text-[#EA4335]">N</span>
+                </h1>
+                <p class="text-sm text-gray-500 font-medium">Multi-App Reward System (India Region)</p>
+                
+                <div class="google-card p-6 text-left space-y-4">
+                    <div class="flex border-b border-gray-200 mb-4">
+                        <button id="tab-login" onclick="setAuthLayoutMode('login')" class="flex-1 pb-3 text-sm font-medium text-[#1a73e8] border-b-2 border-[#1a73e8] text-center transition-all">Login</button>
+                        <button id="tab-signup" onclick="setAuthLayoutMode('signup')" class="flex-1 pb-3 text-sm font-medium text-gray-500 border-b-2 border-transparent text-center transition-all">Sign Up</button>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Email ID</label>
+                        <input type="email" id="auth-email" placeholder="username@gmail.com" class="w-full p-3 google-input text-sm text-gray-900 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Password</label>
+                        <input type="password" id="auth-password" placeholder="Enter password" class="w-full p-3 google-input text-sm text-gray-900 focus:outline-none">
+                    </div>
+                    
+                    <button onclick="executeAuthenticationGateway()" id="btn-auth-trigger" class="w-full google-btn-blue p-3.5 text-sm mt-2 focus:outline-none">
+                        Continue to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard App -->
+        <div id="user-app" class="hidden flex-1 flex flex-col">
+            <header class="bg-white border-b border-gray-200 p-3 sticky top-0 z-50 flex justify-between items-center px-4">
+                <span class="text-xl font-bold tracking-tight">
+                    <span class="text-[#4285F4]">V</span><span class="text-[#EA4335]">S</span><span class="text-[#FBBC05]">C</span><span class="text-[#4285F4]">O</span><span class="text-[#34A853]">I</span><span class="text-[#EA4335]">N</span>
+                </span>
+                
+                <div class="bg-[#E8F0FE] px-3 py-1 rounded-full flex items-center gap-1 border border-[#D2E3FC]">
+                    <i class="fa-solid fa-indian-rupee-sign text-[#1a73e8] text-[11px]"></i>
+                    <span id="global-balance" class="font-bold text-[#1a73e8] text-xs tracking-wide">0.00</span>
+                </div>
+            </header>
+
+            <!-- Compact Live Tracking Status Area -->
+            <div id="tracking-status-box" class="mx-4 mt-3 p-2.5 rounded-lg border border-gray-200 bg-gray-50 flex flex-col gap-1 transition-all">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Live Task Status</span>
+                    <span id="status-badge" class="bg-gray-200 text-gray-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Idle</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px] font-medium border-t border-gray-200/60 pt-1">
+                    <div class="text-gray-600">Session: <span id="live-timer" class="font-mono font-bold text-gray-900">00:00:00</span></div>
+                    <div class="text-right text-gray-600">Earned: <span id="session-earned" class="font-mono font-bold text-green-600">₹0.0000</span></div>
+                </div>
+            </div>
+
+            <main class="p-4 flex-1 space-y-4 pb-24">
+                
+                <!-- SCREEN 1: GATEWAYS -->
+                <section id="screen-tasks" class="user-screen space-y-4">
+                    
+                    <div class="google-card p-3 flex justify-between items-center text-xs">
+                        <span class="font-bold text-[#1a73e8]">Task Gateways (Selected Apps)</span>
+                        <span class="bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-200 font-medium text-[11px]">₹110 / 12h</span>
+                    </div>
+
+                    <!-- Custom App Grid Matrix -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <!-- row 1 -->
+                        <div onclick="launchTargetTaskWindow('https://www.google.com', 'Google')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-google text-3xl text-[#4285F4] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Google</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://m.youtube.com', 'YouTube')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-youtube text-3xl text-[#FF0000] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">YouTube</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://m.facebook.com', 'Facebook')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-facebook text-3xl text-[#1877F2] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Facebook</p>
+                        </div>
+
+                        <!-- row 2 -->
+                        <div onclick="launchTargetTaskWindow('https://www.instagram.com', 'Instagram')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-instagram text-3xl text-[#E1306C] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Instagram</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.pinterest.com', 'Pinterest')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-pinterest text-3xl text-[#BD081C] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Pinterest</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.flipkart.com', 'Flipkart')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-bag-shopping text-3xl text-[#2874F0] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Flipkart</p>
+                        </div>
+
+                        <!-- row 3 -->
+                        <div onclick="launchTargetTaskWindow('https://www.meesho.com', 'Meesho')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-shop text-3xl text-[#F43397] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Meesho</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.amazon.in', 'Amazon')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-brands fa-amazon text-3xl text-[#FF9900] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Amazon</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.nykaa.com', 'Nykaa')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-sparkles text-3xl text-[#fc2779] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Nykaa</p>
+                        </div>
+
+                        <!-- row 4 -->
+                        <div onclick="launchTargetTaskWindow('https://www.myntra.com', 'Myntra')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-shirt text-3xl text-[#ff3f6c] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Myntra</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.hotstar.com', 'Disney+ Hotstar')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-video text-3xl text-[#031424] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">Hotstar</p>
+                        </div>
+                        <div onclick="launchTargetTaskWindow('https://www.jiocinema.com', 'Jio Cinema')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px]">
+                            <i class="fa-solid fa-tv text-3xl text-[#d41c7c] mb-1"></i>
+                            <p class="text-[11px] font-semibold text-gray-800">JioCinema</p>
+                        </div>
+
+                        <!-- row 5 -->
+                        <div onclick="launchTargetTaskWindow('https://www.kukufm.com', 'Kuku FM')" class="google-card p-4 text-center cursor-pointer hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 flex flex-col items-center justify-center min-h-[95px] col-span-3">
+                            <div class="flex items-center gap-2 justify-center">
+                                <i class="fa-solid fa-headphones-simple text-3xl text-[#e31e24]"></i>
+                                <p class="text-sm font-semibold text-gray-800">Kuku FM (Audio Stories)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="google-card p-3 text-center bg-gray-50/50">
+                        <p class="text-[11px] text-gray-500 leading-relaxed">⚠️ <strong>Notice:</strong> Moving back to this app tab auto-pauses the counter. Keep your focus on the newly launched app window to continue securing real-time rewards.</p>
+                    </div>
+                </section>
+
+                <!-- SCREEN 2: VAULT (Wallet) -->
+                <section id="screen-wallet" class="user-screen hidden space-y-4">
+                    <div class="google-card p-5 space-y-3">
+                        <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-building-columns text-[#1a73e8]"></i>Settlement Bank Profile</h2>
+                        <input type="text" id="bank-holder" class="w-full bg-white google-input p-3 text-xs text-gray-900 focus:outline-none" placeholder="Account Holder Official Name">
+                        <input type="text" id="bank-name" class="w-full bg-white google-input p-3 text-xs text-gray-900 focus:outline-none" placeholder="Bank Title Structure">
+                        <input type="text" id="bank-acc" class="w-full bg-white google-input p-3 text-xs text-gray-900 focus:outline-none" placeholder="Account Storage String">
+                        <input type="text" id="bank-ifsc" class="w-full bg-white google-input p-3 text-xs text-gray-900 uppercase focus:outline-none" placeholder="IFSC Clearance Parameter">
+                        <button onclick="commitBankProfile()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium p-3 rounded-xl text-xs transition-all tracking-wider uppercase border border-gray-300">Save Bank Parameters</button>
+                    </div>
+
+                    <div class="google-card p-5 space-y-4">
+                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <span class="text-xs text-gray-600 font-medium">Withdrawable Ledger:</span>
+                            <span id="wallet-balance-display" class="font-bold text-lg text-green-600">₹ 0.00</span>
+                        </div>
+                        <div class="text-[11px] text-gray-400 text-center font-medium">Gate Lock Limits: Min ₹2000 — Max ₹5000</div>
+                        <button onclick="dispatchWithdrawalMatrixRequest()" class="w-full google-btn-blue text-white font-medium p-3.5 text-xs uppercase tracking-widest transition-all">Execute Cashout Protocol</button>
+                    </div>
+                </section>
+
+                <!-- SCREEN 3: ADMIN PANEL TERMINAL -->
+                <section id="screen-admin" class="user-screen hidden space-y-4">
+                    <h2 class="text-sm font-bold text-red-600 uppercase tracking-widest border-b border-gray-200 pb-2 flex items-center gap-2"><i class="fa-solid fa-circle-nodes"></i> Admin Control Terminal</h2>
+                    
+                    <div class="google-card p-4 space-y-3">
+                        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">User Ecosystem Management</h3>
+                        <div id="admin-user-management-node" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="google-card p-4 space-y-3">
+                        <h3 class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pending Payout Clearance Stack</h3>
+                        <div id="admin-payouts-list" class="space-y-2 text-xs"></div>
+                    </div>
+                </section>
+            </main>
+
+            <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2.5 flex justify-between items-center z-50">
+                <button onclick="switchUserScreenLayout('tasks')" class="flex flex-col items-center gap-1 text-[#1a73e8] nav-btn flex-1" id="nav-tasks">
+                    <i class="fa-solid fa-layer-group text-lg"></i><span class="text-[10px] font-medium">Gateways</span>
+                </button>
+                <button onclick="switchUserScreenLayout('wallet')" class="flex flex-col items-center gap-1 text-gray-400 nav-btn flex-1" id="nav-wallet">
+                    <i class="fa-solid fa-vault text-lg"></i><span class="text-[10px] font-medium">Vault</span>
+                </button>
+                <button onclick="switchUserScreenLayout('admin')" class="hidden flex-col items-center gap-1 text-red-500 nav-btn flex-1" id="nav-admin">
+                    <i class="fa-solid fa-terminal text-lg"></i><span class="text-[10px] font-medium">Terminal</span>
+                </button>
+                <button onclick="terminateSessionLogout()" class="flex flex-col items-center gap-1 text-gray-500 flex-1">
+                    <i class="fa-solid fa-circle-power-off text-lg text-red-500"></i><span class="text-[10px] font-medium text-gray-500">Logout</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Core Firebase Architecture Integration Layer -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVHBNMZAffSaX9JeAexBGV60zUlGyeb54",
+            authDomain: "vscoin-ba376.firebaseapp.com",
+            databaseURL: "https://vscoin-ba376-default-rtdb.firebaseio.com",
+            projectId: "vscoin-ba376",
+            storageBucket: "vscoin-ba376.firebasestorage.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const rtdb = getDatabase(app);
+
+        const ADMIN_EMAIL = "grtts24@gmail.com";
+        const ADMIN_PASS = "Ras@2004GDYPR2051D";
+        
+        let currentUser = null, userData = {}, authMode = 'login';
+        
+        let targetTaskWindow = null;
+        let trackingInterval = null;
+        let sessionSeconds = 0;
+        let sessionMoneyEarned = 0.0;
+        let totalActiveSecondsInDatabase = 0;
+
+        window.launchTargetTaskWindow = (url, name) => {
+            if(targetTaskWindow && !targetTaskWindow.closed) {
+                targetTaskWindow.focus();
+                return alert("A task window is already active. Complete it first.");
+            }
+
+            targetTaskWindow = window.open(url, '_blank');
+            if(!targetTaskWindow) {
+                return alert("Popup Blocker Active! Please allow popups to open task paths.");
+            }
+
+            startLiveTrackingEngine(name);
+        };
+
+        function startLiveTrackingEngine(appName) {
+            clearInterval(trackingInterval);
+            sessionSeconds = 0;
+            sessionMoneyEarned = 0.0;
+            totalActiveSecondsInDatabase = userData.activeAppTime || 0;
+
+            updateTrackingUI(true);
+
+            trackingInterval = setInterval(async () => {
+                if (!targetTaskWindow || targetTaskWindow.closed) {
+                    stopLiveTrackingEngine("Window Closed");
+                    return;
+                }
+
+                if (document.visibilityState === 'visible') {
+                    document.getElementById('status-badge').className = "bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase animate-pulse";
+                    document.getElementById('status-badge').innerText = "Paused (View Task Window)";
+                    return; 
+                }
+
+                document.getElementById('status-badge').className = "bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase animate-pulse";
+                document.getElementById('status-badge').innerText = "Live Counting";
+
+                sessionSeconds++;
+                totalActiveSecondsInDatabase++;
+
+                let currentPerSecondRate = 0.0;
+                if (totalActiveSecondsInDatabase <= 3600) {
+                    currentPerSecondRate = 10 / 3600; 
+                } else {
+                    currentPerSecondRate = 100 / 39600; 
+                }
+
+                sessionMoneyEarned += currentPerSecondRate;
+
+                renderTimerStrings(sessionSeconds);
+                document.getElementById('session-earned').innerText = "₹" + sessionMoneyEarned.toFixed(4);
+
+                if (sessionSeconds % 5 === 0) {
+                    let freshSnap = await get(ref(rtdb, 'users/' + currentUser.uid));
+                    if(freshSnap.exists()) {
+                        let remoteBalance = freshSnap.val().balance || 0;
+                        await update(ref(rtdb, 'users/' + currentUser.uid), {
+                            balance: remoteBalance + (currentPerSecondRate * 5),
+                            activeAppTime: totalActiveSecondsInDatabase
+                        });
+                        fetchUserData();
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopLiveTrackingEngine(reason) {
+            clearInterval(trackingInterval);
+            updateTrackingUI(false);
+            alert(`Session closed [Reason: ${reason}]. Accumulated rewards synced safely.`);
+            fetchUserData();
+        }
+
+        function renderTimerStrings(totalSecs) {
+            let hrs = Math.floor(totalSecs / 3600);
+            let mins = Math.floor((totalSecs % 3600) / 60);
+            let secs = totalSecs % 60;
+            document.getElementById('live-timer').innerText = 
+                `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTrackingUI(isActive) {
+            const badge = document.getElementById('status-badge');
+            if(isActive) {
+                badge.className = "bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase";
+                badge.innerText = "Live Counting";
+            } else {
+                badge.className = "bg-gray-200 text-gray-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase";
+                badge.innerText = "Idle";
+                document.getElementById('live-timer').innerText = "00:00:00";
+                document.getElementById('session-earned').innerText = "₹0.0000";
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && (!targetTaskWindow || targetTaskWindow.closed)) {
+                if(trackingInterval) stopLiveTrackingEngine("Returned to Home tab");
+            }
+        });
+
+        window.setAuthLayoutMode = (mode) => {
+            authMode = mode;
+            document.getElementById('tab-login').className = mode === 'login' ? "flex-1 pb-3 text-sm font-medium text-[#1a73e8] border-b-2 border-[#1a73e8] text-center" : "flex-1 pb-3 text-sm font-medium text-gray-500 border-b-2 border-transparent text-center";
+            document.getElementById('tab-signup').className = mode === 'signup' ? "flex-1 pb-3 text-sm font-medium text-[#1a73e8] border-b-2 border-[#1a73e8] text-center" : "flex-1 pb-3 text-sm font-medium text-gray-500 border-b-2 border-transparent text-center";
+        };
+
+        window.executeAuthenticationGateway = async () => {
+            const email = document.getElementById('auth-email').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value;
+
+            if(!email || !password) return alert("All access credentials fields are required.");
+            if(email === ADMIN_EMAIL && password !== ADMIN_PASS) return alert("System Authority core validation failure.");
+
+            try {
+                if(authMode === 'signup') {
+                    if(email === ADMIN_EMAIL) return alert("Protected Root Admin profile structure block.");
+                    
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await set(ref(rtdb, 'users/' + res.user.uid), {
+                        email: email, balance: 0.00, activeAppTime: 0, status: "active"
+                    });
+                    alert("Account setup successfully integrated with standard parameters.");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) { alert(err.message); }
+        };
+
+        window.terminateSessionLogout = () => signOut(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('user-app').classList.add('hidden');
+            document.getElementById('nav-admin').classList.add('hidden');
+
+            if (user) {
+                currentUser = user;
+                const checkBlock = await get(ref(rtdb, 'users/' + currentUser.uid));
+                if(checkBlock.exists() && checkBlock.val().status === "blocked") {
+                    alert("ACCESS SUSPENDED BY SYSTEM ADMINISTRATIVE COMMAND.");
+                    signOut(auth); return;
+                }
+                document.getElementById('user-app').classList.remove('hidden');
+                if(currentUser.email.toLowerCase() === ADMIN_EMAIL) {
+                    document.getElementById('nav-admin').classList.remove('hidden');
+                }
+                await fetchUserData();
+                if(currentUser.email.toLowerCase() === ADMIN_EMAIL) window.invokeSystemAdminModule();
+            } else {
+                currentUser = null;
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        });
+
+        async function fetchUserData() {
+            if(!currentUser) return;
+            const snapshot = await get(ref(rtdb, 'users/' + currentUser.uid));
+            if(snapshot.exists()) {
+                userData = snapshot.val();
+                if(userData.status === "blocked") { terminateSessionLogout(); return; }
+                
+                document.getElementById('global-balance').innerText = (userData.balance || 0).toFixed(2);
+                document.getElementById('wallet-balance-display').innerText = "₹ " + (userData.balance || 0).toFixed(2);
+                document.getElementById('bank-holder').value = userData.bankHolder || "";
+                document.getElementById('bank-name').value = userData.bankName || "";
+                document.getElementById('bank-acc').value = userData.bankAccount || "";
+                document.getElementById('bank-ifsc').value = userData.bankIfsc || "";
+            }
+        }
+
+        window.switchUserScreenLayout = (screenId) => {
+            document.querySelectorAll('.user-screen').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-[#1a73e8]', 'text-gray-400'));
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+            document.getElementById(`nav-${screenId}`).classList.replace('text-gray-400', 'text-[#1a73e8]');
+        };
+
+        window.dispatchWithdrawalMatrixRequest = async () => {
+            const currentBal = userData.balance || 0;
+            if(currentBal < 2000 || currentBal > 5000) return alert("Liquidity Limit Alert: Settle parameters between ₹2000.00 and ₹5000.00 bounds.");
+            if(!userData.bankAccount || !userData.bankIfsc) return alert("Execution Fault: Setup clear terminal bank coordinates mapping profile first.");
+
+            try {
+                const payoutRef = push(ref(rtdb, 'payouts'));
+                await set(payoutRef, {
+                    uid: currentUser.uid, email: currentUser.email, amount: currentBal,
+                    holder: userData.bankHolder, bank: userData.bankName, account: userData.bankAccount, ifsc: userData.bankIfsc, timestamp: Date.now()
+                });
+                await update(ref(rtdb, `users/${currentUser.uid}`), { balance: 0.00 });
+                alert("Withdrawal matrix item pushed to system payout stack pool.");
+                await fetchUserData();
+                if(currentUser.email.toLowerCase() === ADMIN_EMAIL) window.invokeSystemAdminModule();
+            } catch (err) { alert("Central network payout execution pipeline processing failure."); }
+        };
+
+        window.commitBankProfile = async () => {
+            await update(ref(rtdb, 'users/' + currentUser.uid), {
+                bankHolder: document.getElementById('bank-holder').value.trim(),
+                bankName: document.getElementById('bank-name').value.trim(),
+                bankAccount: document.getElementById('bank-acc').value.trim(),
+                bankIfsc: document.getElementById('bank-ifsc').value.trim().toUpperCase()
+            });
+            alert("Settlement profiles data verified & locked into memory system."); 
+            await fetchUserData();
+        };
+
+        // ADMIN CONTROLLER MODULES (VERIFIED & FIXED)
+        window.modifyUserNodeBalance = async (uid, curBal) => {
+            const inputVal = prompt(`Active Target Balance: ₹${curBal.toFixed(2)}. Input absolute configuration update metrics:`);
+            if(inputVal === null || inputVal.trim() === "") return; 
+            
+            const targetFloat = parseFloat(inputVal);
+            if(isNaN(targetFloat)) return alert("Error: Parameter parsed is not a standard mathematical float entity.");
+            
+            await update(ref(rtdb, `users/${uid}`), { balance: targetFloat });
+            window.invokeSystemAdminModule(); 
+            if(uid === currentUser.uid) fetchUserData();
+        }; 
+
+        window.toggleUserNodeBlock = async (uid, currentStatus) => { 
+            const targetStatus = currentStatus === "blocked" ? "active" : "blocked"; 
+            if(confirm(`Execute core validation state migration path to: ${targetStatus.toUpperCase()}?`)) { 
+                await update(ref(rtdb, `users/${uid}`), { status: targetStatus }); 
+                window.invokeSystemAdminModule(); 
+            } 
+        }; 
+
+        window.approvePayoutRequest = async (payId) => { 
+            if(confirm("Authorize transaction matrix release allocation? This clears ledger items.")) { 
+                await remove(ref(rtdb, `payouts/${payId}`)); 
+                alert("Transaction parameters processed successfully."); 
+                window.invokeSystemAdminModule(); 
+            } 
+        }; 
+
+        window.rejectPayoutRequest = async (payId, uid, amount) => { 
+            if(confirm("Reject clearance and return system liquidity balance configurations back to targeted host client memory bank?")) { 
+                const uSnap = await get(ref(rtdb, `users/${uid}`)); 
+                if(uSnap.exists()) { 
+                    await update(ref(rtdb, `users/${uid}`), { balance: (uSnap.val().balance || 0) + amount }); 
+                } 
+                await remove(ref(rtdb, `payouts/${payId}`)); 
+                alert("Transaction matrix dropped & equity rolled back successfully."); 
+                window.invokeSystemAdminModule(); 
+            } 
+        };
+
+        window.invokeSystemAdminModule = async () => {
+            if(currentUser.email.toLowerCase() !== ADMIN_EMAIL) return;
+            
+            const usersControlDiv = document.getElementById('admin-user-management-node'); 
+            usersControlDiv.innerHTML = "";
+            const usersSnap = await get(ref(rtdb, 'users'));
+            if(usersSnap.exists()) {
+                usersSnap.forEach(snap => {
+                    const uId = snap.key; 
+                    const uData = snap.val();
+                    if(uData.email !== ADMIN_EMAIL) {
+                        const row = document.createElement('div');
+                        row.className = "bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 text-xs flex flex-col";
+                        row.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <span class="font-mono text-gray-800 font-bold">${uData.email}</span>
+                                <span class="bg-gray-200 text-[10px] px-2 py-0.5 rounded text-gray-600">Track: ${uData.activeAppTime || 0}s</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span>Ledger: <strong class="text-green-600 font-bold">₹${(uData.balance || 0).toFixed(2)}</strong></span>
+                                <span class="uppercase font-bold text-[10px] ${uData.status === 'blocked' ? 'text-red-500':'text-green-600'}">${uData.status || 'active'}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200">
+                                <button onclick="modifyUserNodeBalance('${uId}', ${(uData.balance || 0)})" class="bg-white border border-gray-300 text-gray-700 rounded-lg py-1 font-medium">Edit Bal</button>
+                                <button onclick="toggleUserNodeBlock('${uId}', '${uData.status || 'active'}')" class="bg-red-50 text-red-600 border border-red-200 rounded-lg py-1 font-medium">${uData.status === 'blocked' ? 'Unblock':'Block'}</button>
+                            </div>
+                        `;
+                        usersControlDiv.appendChild(row);
+                    }
+                });
+            }
+
+            const payoutsDiv = document.getElementById('admin-payouts-list'); 
+            payoutsDiv.innerHTML = "";
+            const paySnap = await get(ref(rtdb, 'payouts'));
+            if(paySnap.exists()) {
+                paySnap.forEach(snap => {
+                    const data = snap.val(); 
+                    const card = document.createElement('div');
+                    card.className = "bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2";
+                    card.innerHTML = `
+                        <div class="flex justify-between font-bold text-gray-800"><span>${data.email}</span><span class="text-green-600">₹ ${data.amount.toFixed(2)}</span></div>
+                        <p class="text-gray-500 text-[10px]">${data.bank} | A/C: ${data.account} | IFSC: ${data.ifsc} (${data.holder})</p>
+                        <div class="flex gap-2">
+                            <button onclick="approvePayoutRequest('${snap.key}')" class="flex-1 bg-green-600 font-medium text-white py-1 rounded-md text-center">Approve</button>
+                            <button onclick="rejectPayoutRequest('${snap.key}', '${data.uid}', ${data.amount})" class="flex-1 bg-red-50 text-red-600 font-medium border border-red-200 py-1 rounded-md text-center">Reject</button>
+                        </div>
+                    `;
+                    payoutsDiv.appendChild(card);
+                });
+            } else { 
+                payoutsDiv.innerHTML = `<p class="text-gray-400 text-[11px] py-2 text-center">No transactions inside buffer queue registry.</p>`; 
+            }
+        };
+    </script>
+</body>
+</html>
+  if(isNaN(targetFloat)) return alert("Error: Parameter parsed is not a standard mathematical float entity.");
+            await update(ref(rtdb, `users/${uid}`), { balance: targetFloat });
+            window.invokeSystemAdminModule(); if(uid === currentUser.uid) fetchUserData();
+        };
+
+        window.toggleUserNodeBlock = async (uid, currentStatus) => {
+            const targetStatus = currentStatus === "blocked" ? "active" : "blocked";
+            if(confirm(`Execute core validation state migration path to: ${targetStatus.toUpperCase()}?`)) {
+                await update(ref(rtdb, `users/${uid}`), { status: targetStatus });
+                window.invokeSystemAdminModule();
+            }
+        };
+
+        window.approvePayoutRequest = async (payId) => {
+            if(confirm("Authorize transaction matrix release allocation? This clears ledger items.")) {
+                await remove(ref(rtdb, `payouts/${payId}`)); alert("Transaction parameters processed successfully."); window.invokeSystemAdminModule();
+            }
+        };
+
+        window.rejectPayoutRequest = async (payId, uid, amount) => {
+            if(confirm("Reject clearance and return system liquidity balance configurations back to targeted host client memory bank?")) {
+                const uSnap = await get(ref(rtdb, `users/${uid}`));
+                if(uSnap.exists()) {
+                    await update(ref(rtdb, `users/${uid}`), { balance: (uSnap.val().balance || 0) + amount });
+                }
+                await remove(ref(rtdb, `payouts/${payId}`)); alert("Transaction matrix dropped & equity rolled back successfully."); window.invokeSystemAdminModule();
+            }
+        };
+    </script>
+</body>
+</html>
